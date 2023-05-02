@@ -11,7 +11,7 @@ const AudioRecorder = () => {
     const [stream, setStream] = useState(null);
     const [audioChunks, setAudioChunks] = useState([]);
     const [audio, setAudio] = useState(null);
-    const [transcripts, setTranscript] = useState('');
+    const [transcripts, setTranscript] = useState([]);
 
     const getMicrophonePermission = async () => {
         if ("MediaRecorder" in window) {
@@ -49,10 +49,11 @@ const AudioRecorder = () => {
 
         deepGramSocket.addEventListener("message", (message) => {
             const received = JSON.parse(message.data);
+            console.log(received);
             const transcript = received.channel.alternatives[0].transcript;
             if (transcript && received.is_final) {
-                setTranscript(transcript);
-                console.log(transcript);
+                setTranscript((_prev) => [..._prev, transcript]);
+                // console.log(transcript);
             }
         });
 
@@ -104,14 +105,18 @@ const AudioRecorder = () => {
                 {audio ? (
                     <div className="audio-player">
                         <audio src={audio} controls></audio>
-                        <a download href={audio}>
-                            Download Recording
-                        </a>
+                        <br/>
+                        <button>
+                            <a download href={audio}>
+                                Download Recording
+                            </a>
+                        </button>
                     </div>
                 ) : null}
             </main>
             <div className="transcript-container">
-                <div className="transcript">{transcripts}</div>
+                {transcripts.map((data,id) => <div className="transcript" key={id}>* - {data}</div>)}
+                {/*<div className="transcript">{transcripts}</div>*/}
             </div>
         </div>
     );
